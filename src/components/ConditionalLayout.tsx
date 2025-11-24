@@ -12,15 +12,17 @@ export default function ConditionalLayout({
   const pathname = usePathname();
 
   // Pages that should not have navbar and footer
-  const noLayoutPages = [
+  // Check if pathname starts with any of these routes
+  const noLayoutRoutes = [
     '/login',
     '/super-admin',
-    '/super-admin/dashboard',
     '/forgot-password',
     '/register',
   ];
 
-  const shouldShowLayout = !noLayoutPages.includes(pathname);
+  const shouldShowLayout = !noLayoutRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
 
   return (
     <>
