@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Login</title>
+</head>
+<body>
+    <h1>Test Login</h1>
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="testVerify()">Test Verify</button>
+    <button onclick="testLogout()">Test Logout</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testLogin() {
+            const result = document.getElementById('result');
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        email: 'jyotiinfotech.04@gmail.com',
+                        password: 'Admin@2025'
+                    })
+                });
+                const data = await response.json();
+                result.textContent = 'Login Response:\n' + JSON.stringify(data, null, 2);
+                console.log('Cookies:', document.cookie);
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function testVerify() {
+            const result = document.getElementById('result');
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/verify', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                result.textContent = 'Verify Response:\n' + JSON.stringify(data, null, 2);
+                console.log('Cookies:', document.cookie);
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function testLogout() {
+            const result = document.getElementById('result');
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                result.textContent = 'Logout Response:\n' + JSON.stringify(data, null, 2);
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 
 export default function SuperAdminLoginPage() {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ export default function SuperAdminLoginPage() {
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -20,10 +22,50 @@ export default function SuperAdminLoginPage() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle super admin login logic
-    console.log('Super Admin Login submitted:', formData);
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Login successful
+        toast.success('Login successful! Redirecting...', {
+          duration: 2000,
+          icon: '✅',
+        });
+        setTimeout(() => {
+          window.location.href = '/super-admin/dashboard';
+        }, 1000);
+      } else {
+        // Show error message
+        toast.error(data.error || 'Login failed', {
+          duration: 4000,
+          icon: '❌',
+        });
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('An error occurred during login. Please try again.', {
+        duration: 4000,
+        icon: '⚠️',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -151,9 +193,36 @@ export default function SuperAdminLoginPage() {
             {/* Sign In Button */}
             <button
               type="submit"
-              className="w-full bg-red-600 text-white px-6 py-3.5 rounded-lg text-base font-semibold hover:bg-red-700 transition-colors duration-200 shadow-md hover:shadow-lg"
+              disabled={isLoading}
+              className="w-full bg-red-600 text-white px-6 py-3.5 rounded-lg text-base font-semibold hover:bg-red-700 transition-colors duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              Sign In
+              {isLoading ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Signing In...
+                </>
+              ) : (
+                'Sign In'
+              )}
             </button>
           </form>
 

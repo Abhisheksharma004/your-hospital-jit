@@ -1,58 +1,54 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
+interface Plan {
+  id: number;
+  name: string;
+  price: number;
+  duration: string;
+  features: string[];
+}
+
 const Pricing: React.FC = () => {
-  const pricingPlans = [
-    {
-      name: 'Starter',
-      price: '7,999',
-      description: 'Perfect for small clinics and healthcare startups',
-      features: [
-        'Up to 50 patients',
-        'Basic patient management',
-        '5 staff accounts',
-        'Email support',
-        'Mobile app access',
-        'Basic reporting',
-      ],
-      highlighted: false,
-    },
-    {
-      name: 'Professional',
-      price: '24,999',
-      description: 'Ideal for growing hospitals and medical centers',
-      features: [
-        'Up to 500 patients',
-        'Advanced patient management',
-        '25 staff accounts',
-        'Priority support 24/7',
-        'Mobile app access',
-        'Advanced analytics',
-        'Custom integrations',
-        'Staff scheduling',
-      ],
-      highlighted: true,
-    },
-    {
-      name: 'Enterprise',
-      price: 'Custom',
-      description: 'For large hospital networks and healthcare systems',
-      features: [
-        'Unlimited patients',
-        'Full feature access',
-        'Unlimited staff accounts',
-        'Dedicated support team',
-        'Mobile app access',
-        'Custom development',
-        'API access',
-        'Multi-location support',
-        'Advanced security',
-      ],
-      highlighted: false,
-    },
-  ];
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPlans();
+  }, []);
+
+  const fetchPlans = async () => {
+    try {
+      const response = await fetch('/api/public/plans', {
+        cache: 'no-store',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPlans(data.plans);
+      }
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getPlanDescription = (name: string) => {
+    const descriptions: { [key: string]: string } = {
+      'Starter': 'Perfect for small clinics and healthcare startups',
+      'Professional': 'Ideal for growing hospitals and medical centers',
+      'Enterprise': 'For large hospital networks and healthcare systems',
+    };
+    return descriptions[name] || 'Comprehensive healthcare management solution';
+  };
+
+  const isHighlighted = (index: number) => {
+    // Highlight the middle plan (Professional) if there are 3 plans
+    return plans.length === 3 && index === 1;
+  };
 
   return (
     <section id="pricing" className="bg-gray-50 py-20 px-4 sm:px-6 lg:px-8">
@@ -69,92 +65,112 @@ const Pricing: React.FC = () => {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          {pricingPlans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`rounded-2xl p-8 ${
-                plan.highlighted
-                  ? 'bg-red-600 text-white shadow-2xl transform scale-105 border-4 border-red-700'
-                  : 'bg-white text-gray-900 shadow-lg border border-gray-200'
-              }`}
-            >
-              {plan.highlighted && (
-                <div className="text-center mb-4">
-                  <span className="bg-white text-red-600 px-4 py-1 rounded-full text-sm font-semibold">
-                    Most Popular
-                  </span>
-                </div>
-              )}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading pricing plans...</p>
+            </div>
+          </div>
+        ) : plans.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-600 text-lg">No pricing plans available at the moment.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            {plans.map((plan, index) => {
+              const highlighted = isHighlighted(index);
+              const isCustomPrice = plan.price === 0 || plan.duration === 'Custom';
 
-              <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <p
-                  className={`text-sm mb-6 ${
-                    plan.highlighted ? 'text-red-100' : 'text-gray-600'
+              return (
+                <div
+                  key={plan.id}
+                  className={`rounded-2xl p-8 ${
+                    highlighted
+                      ? 'bg-red-600 text-white shadow-2xl transform scale-105 border-4 border-red-700'
+                      : 'bg-white text-gray-900 shadow-lg border border-gray-200'
                   }`}
                 >
-                  {plan.description}
-                </p>
-                <div className="flex items-baseline justify-center">
-                  {plan.price !== 'Custom' && (
-                    <span className="text-4xl font-bold">₹</span>
+                  {highlighted && (
+                    <div className="text-center mb-4">
+                      <span className="bg-white text-red-600 px-4 py-1 rounded-full text-sm font-semibold">
+                        Most Popular
+                      </span>
+                    </div>
                   )}
-                  <span className="text-5xl font-bold">{plan.price}</span>
-                  {plan.price !== 'Custom' && (
-                    <span
-                      className={`ml-2 ${
-                        plan.highlighted ? 'text-red-100' : 'text-gray-600'
+
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                    <p
+                      className={`text-sm mb-6 ${
+                        highlighted ? 'text-red-100' : 'text-gray-600'
                       }`}
                     >
-                      /month
-                    </span>
-                  )}
+                      {getPlanDescription(plan.name)}
+                    </p>
+                    <div className="flex items-baseline justify-center">
+                      {!isCustomPrice && (
+                        <span className="text-4xl font-bold">₹</span>
+                      )}
+                      <span className="text-5xl font-bold">
+                        {isCustomPrice ? 'Custom' : plan.price.toLocaleString()}
+                      </span>
+                      {!isCustomPrice && (
+                        <span
+                          className={`ml-2 ${
+                            highlighted ? 'text-red-100' : 'text-gray-600'
+                          }`}
+                        >
+                          /{plan.duration.toLowerCase()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <ul className="space-y-4 mb-8">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-start">
+                        <svg
+                          className={`w-6 h-6 mr-3 shrink-0 ${
+                            highlighted ? 'text-white' : 'text-green-500'
+                          }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        <span
+                          className={
+                            highlighted ? 'text-red-50' : 'text-gray-700'
+                          }
+                        >
+                          {feature}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <Link
+                    href="/get-started"
+                    className={`block w-full text-center px-6 py-4 rounded-lg font-semibold transition-colors duration-200 ${
+                      highlighted
+                        ? 'bg-white text-red-600 hover:bg-gray-100'
+                        : 'bg-red-600 text-white hover:bg-red-700'
+                    }`}
+                  >
+                    {isCustomPrice ? 'Contact Sales' : 'Get Started'}
+                  </Link>
                 </div>
-              </div>
-
-              <ul className="space-y-4 mb-8">
-                {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-start">
-                    <svg
-                      className={`w-6 h-6 mr-3 flex-shrink-0 ${
-                        plan.highlighted ? 'text-white' : 'text-green-500'
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    <span
-                      className={
-                        plan.highlighted ? 'text-red-50' : 'text-gray-700'
-                      }
-                    >
-                      {feature}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              <Link
-                href="/get-started"
-                className={`block w-full text-center px-6 py-4 rounded-lg font-semibold transition-colors duration-200 ${
-                  plan.highlighted
-                    ? 'bg-white text-red-600 hover:bg-gray-100'
-                    : 'bg-red-600 text-white hover:bg-red-700'
-                }`}
-              >
-                {plan.price === 'Custom' ? 'Contact Sales' : 'Get Started'}
-              </Link>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* FAQ Section */}
         <div className="mt-20">

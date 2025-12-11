@@ -3,7 +3,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 
-export default function SuperAdminDashboard() {
+import ProtectedRoute from '@/components/ProtectedRoute';
+import LogoutButton from '@/components/LogoutButton';
+
+function DashboardContent() {
   const hospitals = [
     {
       id: 1,
@@ -188,32 +191,12 @@ export default function SuperAdminDashboard() {
             <span>Settings</span>
           </Link>
         </nav>
-
-        {/* Logout */}
-        <div className="p-4 border-t border-gray-200">
-          <button className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 font-medium w-full">
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
-            <span>Logout</span>
-          </button>
-        </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0">
+        <header className="bg-white shadow-sm border-b border-gray-200 shrink-0">
           <div className="px-8 py-4 flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
@@ -251,6 +234,7 @@ export default function SuperAdminDashboard() {
                   A
                 </div>
               </div>
+              <LogoutButton />
             </div>
           </div>
         </header>
@@ -350,7 +334,7 @@ export default function SuperAdminDashboard() {
 
           {/* Hospitals Table */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col" style={{ maxHeight: 'calc(100vh - 400px)' }}>
-            <div className="px-6 py-3 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
+            <div className="px-6 py-3 border-b border-gray-200 flex items-center justify-between shrink-0">
               <h2 className="text-lg font-semibold text-gray-900">
                 Hospitals Overview
               </h2>
@@ -436,5 +420,13 @@ export default function SuperAdminDashboard() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function SuperAdminDashboard() {
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
   );
 }

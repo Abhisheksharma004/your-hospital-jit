@@ -3,7 +3,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 
-export default function HospitalsManagement() {
+import ProtectedRoute from '@/components/ProtectedRoute';
+import LogoutButton from '@/components/LogoutButton';
+
+function HospitalsContent() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -207,22 +210,7 @@ export default function HospitalsManagement() {
         </nav>
 
         <div className="p-4 border-t border-gray-200">
-          <button className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 font-medium w-full">
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
-            <span>Logout</span>
-          </button>
+          <LogoutButton />
         </div>
       </aside>
 
@@ -587,5 +575,13 @@ export default function HospitalsManagement() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function HospitalsManagement() {
+  return (
+    <ProtectedRoute>
+      <HospitalsContent />
+    </ProtectedRoute>
   );
 }
